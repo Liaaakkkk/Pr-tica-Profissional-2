@@ -9,8 +9,13 @@ var signupRouter = require('./routes/signup');
 
 var connectDatabase = require('./database/db');
 
+var connectDatabase = require('./database/db');
 var app = express();
 
+connectDatabase();
+
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 connectDatabase();
 
 app.set('views', path.join(__dirname, 'views'));
@@ -28,6 +33,7 @@ app.use('/signup', signupRouter);
 app.use('/users', usersRouter);
 
 app.use((req, res) => {
+  res.status(404).send('Página não encontrada - 404');
   res.status(404).send('Página não encontrada - 404');
 });
 
