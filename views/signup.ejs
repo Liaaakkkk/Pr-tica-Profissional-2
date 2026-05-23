@@ -1,6 +1,6 @@
 <%- include('partials/header', { title: 'Signup' }) %>
 
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght=900&display=swap" rel="stylesheet">
 
 <style>
 body {
@@ -166,7 +166,13 @@ document.getElementById("form").addEventListener("submit", async (e) => {
   }
 
   try {
-    const resposta = await fetch("http://localhost:3000/auth/register", {
+    // 1. Identifica onde o site está rodando e define o endereço base do servidor
+    const URL_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000'
+      : 'https://fixly-o7l5.onrender.com'; // Removida a barra do final para não duplicar na rota
+
+    // 2. Faz a requisição usando a variável dinâmica
+    const resposta = await fetch(`${URL_BASE}/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
