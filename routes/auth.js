@@ -2,13 +2,16 @@ const express = require("express");
 const router = express.Router();
 
 const User = require("../models/User");
-const bcrypt = require("bcryptjs");
 
-/* =========================
-   🔐 REGISTER
-========================= */
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+// =========================
+// REGISTER
+// =========================
 router.post("/register", async (req, res) => {
     try {
+
         const { nome, username, email, senha } = req.body;
 
         if (!nome || !username || !email || !senha) {
@@ -24,6 +27,7 @@ router.post("/register", async (req, res) => {
         }
 
         const emailExiste = await User.findOne({ email });
+
         if (emailExiste) {
             return res.status(400).json({
                 msg: "E-mail já cadastrado"
@@ -31,12 +35,14 @@ router.post("/register", async (req, res) => {
         }
 
         const usernameExiste = await User.findOne({ username });
+
         if (usernameExiste) {
             return res.status(400).json({
                 msg: "Username já está em uso"
             });
         }
 
+        // criptografar senha
         const senhaHash = await bcrypt.hash(senha, 10);
 
         const novoUsuario = new User({
@@ -53,17 +59,21 @@ router.post("/register", async (req, res) => {
         });
 
     } catch (err) {
+
         return res.status(500).json({
             erro: err.message
         });
+
     }
 });
 
-/* =========================
-   🔑 LOGIN (SEM JWT)
-========================= */
+// =========================
+// LOGIN
+// =========================
 router.post("/login", async (req, res) => {
+
     try {
+
         const { email, senha } = req.body;
 
         const usuario = await User.findOne({ email });
@@ -74,7 +84,11 @@ router.post("/login", async (req, res) => {
             });
         }
 
-        const senhaOk = await bcrypt.compare(senha, usuario.senha);
+        // comparar senha
+        const senhaOk = await bcrypt.compare(
+            senha,
+            usuario.senha
+        );
 
         if (!senhaOk) {
             return res.status(400).json({
@@ -82,20 +96,91 @@ router.post("/login", async (req, res) => {
             });
         }
 
-        return res.json({
-            usuario: {
+        // =========================
+        // GERAR TOKEN JWT
+        // =========================
+        const token = jwt.sign(
+            {
                 id: usuario._id,
-                nome: usuario.nome,
-                username: usuario.username,
                 email: usuario.email
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "1d"
             }
+        );
+
+        // =========================
+        // SALVAR SESSÃO
+        // =========================
+        req.session.usuario = {
+            id: usuario._id,
+            nome: usuario.nome,
+            username: usuario.username,
+            email: usuario.email
+        };
+
+        req.session.save((err) => {
+
+            if (err) {
+
+                console.error("Erro ao salvar sessão:", err);
+
+                return res.status(500).json({
+                    msg: "Erro ao processar login"
+                });
+
+            }
+
+            return res.json({
+                msg: "Logado com sucesso!",
+                token,
+                usuario: req.session.usuario
+            });
+
         });
 
     } catch (err) {
+
         return res.status(500).json({
             erro: err.message
         });
+
     }
+
+});
+
+// =========================
+// LOGOUT
+// =========================
+router.get("/logout", (req, res) => {
+
+    if (req.session) {
+
+        req.session.destroy((err) => {
+
+            if (err) {
+
+                console.error("Erro ao destruir sessão:", err);
+
+                return res.status(500).json({
+                    msg: "Erro ao tentar deslogar."
+                });
+
+            }
+
+            res.clearCookie("fixly.sid");
+
+            return res.redirect("/");
+
+        });
+
+    } else {
+
+        return res.redirect("/");
+
+    }
+
 });
 
 module.exports = router;

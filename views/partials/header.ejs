@@ -76,16 +76,33 @@
          z-index: 1000;
       }
       </style>
-      </head>
+</head>
+   
+<body>
+   <header>
+   <div class="ui inverted menu">
+      <a class="item" href="/">Início</a>
+      <a class="item" href="/about">Sobre</a>
+      <a class="item" href="/signup">Inscreva-se</a> 
+      <a class="item" href="/login">Entrar</a>         
+      <a class="item" href="/flashcards">Criar Flashcards</a>
+      <a class="item" href="/profile">Meu Perfil</a>
+
+      <div class="right menu">
+         <a class="item" href="/auth/logout" style="color: #ff6b6b; font-weight: bold;" onclick="fazerLogout(event)">Sair</a>
+      </div>
+   </div>
+</header>
       
-      <body>
-         <header>
-            <div class="ui inverted menu">
-               <a class="item" href="/">Inìcio</a>
-               <a class="item" href="/about">Criar Flashcards</a>
-               <a class="item" href="/signup">Inscreva-se</a>
-               <a class="item" href="/login">Entrar</a>
-            </div>
-         </header>
-         
-         <main class="main-content">
+   <main class="main-content">
+
+<script>
+// Função executada ao clicar em "Sair" para limpar dados residuais do front-end
+function fazerLogout(event) {
+    // Limpa o localStorage para não deixar rastro do usuário antigo na tela
+    localStorage.removeItem("usuario");
+    localStorage.removeItem("usuarioId");
+    
+    // Deixa o link seguir o caminho natural para o servidor (/auth/logout) limpar o cookie de sessão
+}
+</script>

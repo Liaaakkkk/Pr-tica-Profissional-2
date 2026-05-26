@@ -225,32 +225,36 @@ async function salvarFlashcard(){
     const pergunta = questionInput.value;
     const resposta = answerInput.value;
 
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-    if(!usuario){
-        alert("Você precisa estar logado!");
+    if(!pergunta.trim() || !resposta.trim()){
+        alert("Por favor, preencha a pergunta e a resposta do card!");
         return;
     }
 
     try {
+        // Efetuando o pedido usando rota relativa para garantir compatibilidade local e produção
         const respostaServidor = await fetch("/flashcards", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                pergunta,
-                resposta,
-                usuarioId: usuario.id
-            })
+            body: JSON.stringify({ pergunta, resposta }),
+            credentials: "include" // 👈 INDISPENSÁVEL: Força o envio dos cookies da sessão activa
         });
 
         const data = await respostaServidor.json();
-        alert(data.msg);
+        
+        if (respostaServidor.ok) {
+            alert(data.msg || "Flashcard adicionado com sucesso!");
+            // Limpa os campos após salvar com sucesso
+            questionInput.value = "";
+            answerInput.value = "";
+        } else {
+            alert(data.msg || "Erro interno ao tentar salvar o card.");
+        }
 
     } catch(erro) {
-        console.log(erro);
-        alert("Erro ao salvar flashcard");
+        console.error("Erro na comunicação com o servidor:", erro);
+        alert("Não foi possível conectar com o servidor.");
     }
 }
 

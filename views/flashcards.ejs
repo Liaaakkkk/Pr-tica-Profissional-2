@@ -1,0 +1,501 @@
+<%- include('partials/header', { title: 'Fixly :: Meus Flashcards' }) %>
+
+<style>
+  /* --- Fundo Padrão --- */
+  body {
+    background: linear-gradient(180deg, #74b9ff 0%, #dfefff 60%, #ffffff 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+  }
+
+  .flashcard-main-container {
+    max-width: 950px;
+    margin: 100px auto 120px auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+  }
+
+  .texto-informativo {
+    color: #2c3e50;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  /* --- Bloco Branco Principal --- */
+  .creations-container {
+    background: #ffffff; 
+    padding: 50px 40px;
+    border-radius: 35px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    margin-bottom: 40px;
+    text-align: center;
+  }
+
+  /* --- Formulários --- */
+  .form-fixly-bloco {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .form-fixly-bloco input, .form-fixly-bloco textarea, .form-fixly-bloco select {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #dfefff;
+    border-radius: 12px;
+    font-size: 16px;
+    box-sizing: border-box;
+    background-color: #f8faff;
+    color: #333;
+  }
+
+  .form-fixly-bloco textarea {
+    resize: vertical;
+    height: 90px;
+  }
+
+  .btn-adicionar-fixly {
+    background-color: #007bff;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 28px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    display: inline-block;
+    align-self: center;
+    box-shadow: 0 4px 6px rgba(0, 123, 255, 0.15);
+  }
+
+  .btn-adicionar-fixly:hover {
+    background-color: #0069d9;
+  }
+
+  /* --- GRID DE 2 COLUNAS SIMÉTRICAS --- */
+  .filtros-materias-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    max-width: 650px;
+    margin: 20px auto;
+  }
+
+  .btn-materia-card {
+    border: none;
+    border-radius: 15px;
+    padding: 25px 15px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .btn-materia-card:hover {
+    transform: translateY(-2px);
+    filter: brightness(0.95);
+  }
+
+  .btn-materia-card.ativo {
+    outline: 4px solid #007bff;
+  }
+
+  /* 🎨 Cores --- */
+  .cor-geral { background-color: #ff7643; color: #581c00; }
+  .cor-linguagens { background-color: #f16293; color: #50001f; }
+  .cor-humanas { background-color: #f4cc44; color: #523f00; }
+  .cor-matematica { background-color: #9b5cb8; color: #351047; }
+  .cor-natureza { background-color: #4cd195; color: #004726; }
+
+  /* --- Visualização das Pastas de Assuntos --- */
+  .pasta-wrapper {
+    background: #fdfdfd;
+    border: 2px solid #eef5ff;
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 25px;
+    text-align: left;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  }
+
+  .pasta-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #dfefff;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+
+  .pasta-header-titulo {
+    font-size: 20px;
+    color: #104488;
+    font-weight: bold;
+  }
+
+  .btn-deletar-pasta {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+
+  .btn-deletar-pasta:hover {
+    background: #ffe6e6;
+  }
+
+  /* --- Grid dos Cards Internos da Pasta --- */
+  .grid-cards-salvos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    .filtros-materias-grid { grid-template-columns: 1fr; }
+    .grid-cards-salvos { grid-template-columns: 1fr; }
+  }
+
+  .flashcard-item-box {
+    padding: 30px 25px;
+    border-radius: 18px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+    color: white;
+    text-align: left;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .flashcard-item-box h3 {
+    margin: 0 0 10px 0;
+    font-size: 20px;
+    opacity: 0.95;
+  }
+
+  .flashcard-item-box p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .resposta-escondida-txt {
+    display: none;
+    margin-top: 15px !important;
+    padding-top: 15px;
+    border-top: 2px dashed rgba(255, 255, 255, 0.4);
+    font-weight: bold;
+    font-size: 18px !important;
+  }
+
+  .clique-revelar-aviso {
+    font-size: 12px;
+    opacity: 0.7;
+    display: block;
+    margin-top: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+</style>
+
+<div class="flashcard-main-container">
+
+  <div class="creations-container">
+    <div class="texto-informativo">Criar Nova Pasta (Assunto)</div>
+    <div class="form-fixly-bloco">
+      <input type="text" id="nome-nova-pasta" placeholder="Nome do Assunto (Ex: Sintaxe, Trigonometria, Óptica...)" />
+      <select id="materia-da-pasta">
+        <option value="Geral">Vincular à Matéria: Geral</option>
+        <option value="Linguagens">Vincular à Matéria: Linguagens</option>
+        <option value="Ciências Humanas">Vincular à Matéria: Ciências Humanas</option>
+        <option value="Matemática">Vincular à Matéria: Matemática</option>
+        <option value="Ciências da Natureza">Vincular à Matéria: Ciências da Natureza</option>
+      </select>
+      <button class="btn-adicionar-fixly" onclick="adicionarNovaPasta()">Adicionar pasta</button>
+    </div>
+  </div>
+
+  <div class="creations-container">
+    <div class="texto-informativo">Criar Novo Flashcard</div>
+    
+    <form id="form-flashcard" class="form-fixly-bloco">
+      <input type="text" id="pergunta" placeholder="Digite a Pergunta..." required />
+      <textarea id="resposta" placeholder="Digite a Resposta correta..." required></textarea>
+      
+      <select id="select-pasta-destino" required>
+      </select>
+      
+      <button type="submit" class="btn-adicionar-fixly">Adicionar card</button>
+    </form>
+  </div>
+
+  <div class="creations-container">
+    <div class="texto-informativo">Abaixo você terá acesso aos seus flashcards criados.</div>
+
+    <div class="filtros-materias-grid">
+      <button class="btn-materia-card cor-geral ativo" onclick="filtrarMateria('Geral', this)">Geral</button>
+      <button class="btn-materia-card cor-linguagens" onclick="filtrarMateria('Linguagens', this)">Linguagens</button>
+      <button class="btn-materia-card cor-humanas" onclick="filtrarMateria('Ciências Humanas', this)">Ciências Humanas</button>
+      <button class="btn-materia-card cor-matematica" onclick="filtrarMateria('Matemática', this)">Matemática</button>
+      <button class="btn-materia-card cor-natureza" onclick="filtrarMateria('Ciências da Natureza', this)">Ciências da Natureza</button>
+    </div>
+
+    <div id="area-pastas-e-cards" style="margin-top: 30px;">
+      <p style="color: #666;">Carregando seus cartões estruturados...</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let todosOsCards = [];
+  let materiaAtualSelecionada = 'Geral';
+
+  let asPastas = JSON.parse(localStorage.getItem('fixly_pastas')) || [];
+  let mapaCardPasta = JSON.parse(localStorage.getItem('fixly_mapa_cards_pastas')) || {};
+
+  function pegarClasseCor(materia) {
+    switch (materia) {
+      case 'Geral': return 'cor-geral';
+      case 'Linguagens': return 'cor-linguagens';
+      case 'Ciências Humanas': return 'cor-humanas';
+      case 'Matemática': return 'cor-matematica';
+      case 'Ciências da Natureza': return 'cor-natureza';
+      default: return 'cor-geral';
+    }
+  }
+
+  function adicionarNovaPasta() {
+    const nome = document.getElementById('nome-nova-pasta').value.trim();
+    const materia = document.getElementById('materia-da-pasta').value;
+
+    if (!nome) return alert("Por favor, informe o nome do assunto para a pasta!");
+
+    const novaPasta = {
+      id: 'pasta_' + Date.now(),
+      nome: nome,
+      materia: materia
+    };
+
+    asPastas.push(novaPasta);
+    localStorage.setItem('fixly_pastas', JSON.stringify(asPastas));
+    document.getElementById('nome-nova-pasta').value = '';
+
+    alert(`Pasta "${nome}" adicionada à matéria ${materia}!`);
+    sincronizarSelectEVisualizacao();
+  }
+
+  function deletarPasta(idPasta, nomePasta) {
+    if (confirm(`Tem certeza que deseja apagar a pasta "${nomePasta}"?`)) {
+      asPastas = asPastas.filter(pasta => pasta.id !== idPasta);
+      localStorage.setItem('fixly_pastas', JSON.stringify(asPastas));
+      sincronizarSelectEVisualizacao();
+    }
+  }
+
+  function atualizarSelectPastas() {
+    const select = document.getElementById('select-pasta-destino');
+    select.innerHTML = '<option value="" disabled selected>Escolha o Assunto (Pasta) de Destino</option>';
+
+    asPastas.forEach(pasta => {
+      const opt = document.createElement('option');
+      opt.value = JSON.stringify({ pastaId: pasta.id, materia: pasta.materia });
+      opt.textContent = `[${pasta.materia}] Assunto: ${pasta.nome}`;
+      select.appendChild(opt);
+    });
+  }
+
+  async function carregarMeusFlashcards() {
+    try {
+      // Captura o token armazenado no LocalStorage
+      const token = localStorage.getItem('token');
+
+      const resposta = await fetch('/flashcards/dados', {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          // Adiciona o cabeçalho Bearer Token necessário para o backend
+          "Authorization": token ? `Bearer ${token}` : ""
+        }
+      });
+
+      if (resposta.status === 401) {
+        document.getElementById("area-pastas-e-cards").innerHTML = `<p style="color:#104488; font-weight:bold;">Sua sessão expirou ou você não está autenticado. Por favor, faça login novamente.</p>`;
+        return;
+      }
+
+      todosOsCards = await resposta.json();
+      renderizarEstruturaPastasECards();
+
+    } catch (err) {
+      console.error(err);
+      document.getElementById("area-pastas-e-cards").innerHTML = `<p style="color:red; font-weight:bold;">Erro ao buscar dados do servidor.</p>`;
+    }
+  }
+
+  function renderizarEstruturaPastasECards() {
+    const containerPrincipal = document.getElementById("area-pastas-e-cards");
+    containerPrincipal.innerHTML = "";
+
+    const pastasFiltradas = asPastas.filter(p => p.materia === materiaAtualSelecionada);
+
+    if (pastasFiltradas.length === 0) {
+      containerPrincipal.innerHTML = `<p style="color:#777; font-weight:bold; padding:20px;">Nenhuma pasta ou assunto cadastrado para a matéria "${materiaAtualSelecionada}" ainda.</p>`;
+      return;
+    }
+
+    pastasFiltradas.forEach(pasta => {
+      const pastaBox = document.createElement('div');
+      pastaBox.className = 'pasta-wrapper';
+      
+      pastaBox.innerHTML = `
+        <div class="pasta-header-container">
+          <div class="pasta-header-titulo">Assunto: ${pasta.nome}</div>
+          <button class="btn-deletar-pasta" onclick="deletarPasta('${pasta.id}', '${pasta.nome}')">Apagar Pasta</button>
+        </div>
+      `;
+
+      const gridCards = document.createElement('div');
+      gridCards.className = 'grid-cards-salvos';
+
+      const cardsDestaPasta = todosOsCards.filter(card => {
+        if (card.materia === materiaAtualSelecionada) {
+          const chaveCard = btoa(unescape(encodeURIComponent(card.pergunta.trim())));
+          const pastaDoCard = mapaCardPasta[chaveCard];
+          if (pastaDoCard === pasta.id) return true;
+        }
+        return false;
+      });
+
+      if (cardsDestaPasta.length === 0) {
+        gridCards.innerHTML = `<p style="grid-column: 1/-1; color:#999; font-style: italic;">Nenhum flashcard adicionado neste assunto ainda.</p>`;
+      } else {
+        cardsDestaPasta.forEach((card, idx) => {
+          const classeCor = pegarClasseCor(card.materia);
+          const cardIdUnico = `card_${pasta.id}_${idx}`;
+
+          const cardHTML = `
+            <div class="flashcard-item-box ${classeCor}" onclick="revelarResposta('${cardIdUnico}')">
+              <h3>Pergunta:</h3>
+              <p>${card.pergunta}</p>
+              
+              <span class="clique-revelar-aviso" id="aviso-${cardIdUnico}">Clique no card para ver a resposta</span>
+              
+              <div id="resp-${cardIdUnico}" class="resposta-escondida-txt">
+                <h3>Resposta:</h3>
+                <p>${card.resposta}</p>
+              </div>
+            </div>
+          `;
+          gridCards.innerHTML += cardHTML;
+        });
+      }
+
+      pastaBox.appendChild(gridCards);
+      containerPrincipal.appendChild(pastaBox);
+    });
+  }
+
+  function revelarResposta(idUnico) {
+    const elementoResp = document.getElementById(`resp-${idUnico}`);
+    const elementoAviso = document.getElementById(`aviso-${idUnico}`);
+
+    if (elementoResp.style.display === "block") {
+      elementoResp.style.display = "none";
+      elementoAviso.style.display = "block";
+    } else {
+      elementoResp.style.display = "block";
+      elementoAviso.style.display = "none";
+    }
+  }
+
+  function filtrarMateria(materia, botaoClicado) {
+    materiaAtualSelecionada = materia;
+    document.querySelectorAll('.btn-materia-card').forEach(btn => btn.classList.remove('ativo'));
+    botaoClicado.classList.add('ativo');
+    renderizarEstruturaPastasECards();
+  }
+
+  document.getElementById("form-flashcard").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const pergunta = document.getElementById("pergunta").value.trim();
+    const resposta = document.getElementById("resposta").value.trim();
+    
+    const selectDestino = document.getElementById("select-pasta-destino");
+    if (!selectDestino.value) {
+       return alert("Por favor, selecione uma pasta de destino válida!");
+    }
+
+    const dadosPastaOrigem = JSON.parse(selectDestino.value);
+    const materia = dadosPastaOrigem.materia;
+
+    try {
+      // Captura o token armazenado no LocalStorage
+      const token = localStorage.getItem('token');
+
+      const res = await fetch('/flashcards', {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          // Adiciona o cabeçalho Bearer Token necessário para o backend criar o card
+          "Authorization": token ? `Bearer ${token}` : ""
+        },
+        credentials: "include",
+        body: JSON.stringify({ pergunta, resposta, materia })
+      });
+
+      if (res.ok) {
+        const chaveCardSegura = btoa(unescape(encodeURIComponent(pergunta)));
+        mapaCardPasta[chaveCardSegura] = dadosPastaOrigem.pastaId;
+        localStorage.setItem('fixly_mapa_cards_pastas', JSON.stringify(mapaCardPasta));
+
+        document.getElementById("form-flashcard").reset();
+        atualizarSelectPastas();
+        await carregarMeusFlashcards();
+      } else {
+        let mensagemErro = 'O back-end rejeitou os dados.';
+        try {
+            const jsonErro = await res.json();
+            mensagemErro = jsonErro.msg || mensagemErro;
+        } catch(e) {
+            const textoBruto = await res.text();
+            mensagemErro = textoBruto || mensagemErro;
+        }
+        alert(`Erro do Servidor (${res.status}): ${mensagemErro}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erro de comunicação: O servidor está desligado ou inacessível.");
+    }
+  });
+
+  function sincronizarSelectEVisualizacao() {
+    atualizarSelectPastas();
+    renderizarEstruturaPastasECards();
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    atualizarSelectPastas();
+    carregarMeusFlashcards();
+  });
+</script>
+
+<%- include('partials/footer') %>

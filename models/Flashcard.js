@@ -12,6 +12,12 @@ const FlashcardSchema = new mongoose.Schema({
         required: true
     },
 
+    // 🌟 ADICIONADO: Campo para salvar a matéria selecionada pelo usuário
+    materia: {
+        type: String,
+        required: true
+    },
+
     usuarioId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

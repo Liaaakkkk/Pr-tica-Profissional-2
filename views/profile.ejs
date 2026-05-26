@@ -99,6 +99,7 @@
     color: #104488;
   }
 
+  /* --- Botões de Ação (Voltar e Sair) --- */
   .btn-voltar {
     display: inline-block;
     margin-top: 20px;
@@ -116,6 +117,27 @@
 
   .btn-voltar:hover {
     background-color: #0056b3;
+  }
+
+  .btn-logout {
+    display: inline-block;
+    margin-top: 20px;
+    margin-left: 10px;
+    padding: 12px 30px;
+    border: 2px solid #e74c3c;
+    border-radius: 8px;
+    background-color: transparent;
+    color: #e74c3c;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-logout:hover {
+    background-color: #e74c3c;
+    color: white;
   }
 </style>
 
@@ -144,10 +166,10 @@
   </div>
 
   <a href="/" class="btn-voltar">Voltar ao Início</a>
+  <a href="/auth/logout" class="btn-logout" onclick="return fazerLogout(event)">Sair da Conta</a>
 </div>
 
 <script>
-  // Função que carrega o perfil ao abrir a tela
   function carregarPerfil() {
       const usuario = JSON.parse(localStorage.getItem("usuario"));
       
@@ -161,18 +183,15 @@
       document.getElementById('perfil-username').innerText = usuario.username ? `@${usuario.username}` : "Não informado";
       document.getElementById('perfil-email').innerText = usuario.email || "Não informado";
       
-      // Se já tiver uma imagem em Base64 salva no localStorage, exibe ela
       if (usuario.fotoUrl) {
           document.getElementById('perfil-foto-img').src = usuario.fotoUrl;
       }
   }
 
-  // Função mágica que pega o arquivo do PC/Celular e transforma em texto para salvar
   function atualizarFotoLocal(input) {
       if (input.files && input.files[0]) {
           const arquivo = input.files[0];
 
-          // Validação simples de tamanho (evita travar o localStorage com imagens gigantes)
           if (arquivo.size > 2 * 1024 * 1024) { 
               alert("Escolha uma imagem de até 2MB para não sobrecarregar o sistema!");
               return;
@@ -180,24 +199,37 @@
 
           const leitor = new FileReader();
           
-          // Quando terminar de ler o arquivo...
           leitor.onload = function(e) {
-              const base64String = e.target.result; // Imagem convertida em texto seguro
-              
+              const base64String = e.target.result;
               const usuario = JSON.parse(localStorage.getItem("usuario"));
               if (usuario) {
-                  // Grava a string da imagem no objeto do usuário
                   usuario.fotoUrl = base64String;
                   localStorage.setItem("usuario", JSON.stringify(usuario));
-                  
-                  // Atualiza a pré-visualização na hora
                   document.getElementById('perfil-foto-img').src = base64String;
-                  alert("Foto de perfil atualizada!");
+                  alert("Foto de perfil updated com sucesso!");
               }
           }
           
-          leitor.readAsDataURL(arquivo); // Dispara a conversão da imagem
+          leitor.readAsDataURL(arquivo);
       }
+  }
+
+  // 🌟 FUNÇÃO AJUSTADA: Limpa o front-end e permite o redirecionamento ao servidor para limpar a sessão
+  function fazerLogout(event) {
+      if (confirm("Tem certeza que deseja sair da conta?")) {
+          // Limpa a sessão local e dados residuais do navegador
+          localStorage.removeItem("usuario");
+          sessionStorage.clear();
+          
+          alert("Sessão encerrada localmente! Redirecionando...");
+          
+          // Retorna true para permitir que o link avance até o servidor (/auth/logout)
+          return true; 
+      }
+      
+      // Cancela o clique caso o usuário mude de ideia no confirm
+      event.preventDefault();
+      return false;
   }
 
   window.addEventListener('DOMContentLoaded', carregarPerfil);

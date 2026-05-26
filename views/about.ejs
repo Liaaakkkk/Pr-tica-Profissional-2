@@ -1,13 +1,96 @@
-<%- include('partials/header', { title: 'About' }) %>
+<%- include('partials/header', { title: 'Sobre' }) %>
 
-<section class="hero">
-    <h2>Sobre o Fixly</h2>
+<style>
+  body {
+    background: linear-gradient(180deg, #74b9ff 0%, #dfefff 60%, #ffffff 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+  }
+
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 20px;
+    box-sizing: border-box;
+  }
+
+  /* --- Balão Azul Escuro do Título --- */
+  .titulo-balao {
+    background-color: #104488; /* O azul escuro do Fixly */
+    color: #74b9ff; /* O azul claro do texto */
+    font-family: 'Merriweather', serif;
+    font-size: 45px;
+    font-weight: bold;
+    padding: 20px 60px;
+    border-radius: 30px;
+    margin-bottom: 40px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    max-width: 80vh;
+  }
+
+  /* --- Texto Centralizado e Formatado --- */
+  .sobre-texto {
+    max-width: 800px;
+    text-align: center;
+    font-size: 20px;
+    color: #2c3e50;
+    line-height: 1.6;
+    font-weight: bold;
+    margin-bottom: 40px;
+  }
+
+  .sobre-texto p {
+    margin-bottom: 20px;
+  }
+
+  /* --- Botão Voltar --- */
+  .btn-voltar {
+    display: inline-block;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+
+  .btn-voltar:hover {
+    background-color: #0056b3;
+  }
+</style>
+
+<main class="main-content">
+
+  <div class="titulo-balao">
+    Sobre o Fixly!
+  </div>
+  
+  <div class="sobre-texto">
     <p>
-        O Fixly é uma plataforma baseada no método de estudo de flashcards, desenvolvido com o intuito de tornar a
-        aprendizagem mais rápida e prática. O site permite que o usuário crie flashcards para revisar conteúdos de
-        forma dinâmica pra facilitar a memorização, podendo também organizar por área, auxiliando na organização. É
-        ideal pra revisões rápidas e estudos mais interativos.
+      O Fixly é uma plataforma baseada no método de estudo de flashcards, desenvolvido com o intuito de tornar a
+      aprendizagem mais rápida e prática.
     </p>
-</section>
+    <p>
+      O site permite que o usuário crie flashcards para revisar conteúdos de forma dinâmica pra facilitar a memorização, 
+      podendo também organizar por área, auxiliando na organização.
+    </p>
+    <p>
+      É ideal pra revisões rápidas e estudos mais interativos. Explore nossas ferramentas e turbine seu aprendizado!
+    </p>
+  </div>
+
+  <a href="/" class="btn-voltar">Voltar ao Início</a>
+
+</main>
 
 <%- include('partials/footer') %>

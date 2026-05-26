@@ -1,37 +1,101 @@
 const express = require("express");
 const router = express.Router();
 
+const jwt = require("jsonwebtoken");
+
 const Flashcard = require("../models/Flashcard");
 
-router.post("/", async (req, res) => {
+const { auth } = require("../middlewares/middleware");
 
-    console.log(req.body);
+// =========================
+// PÁGINA EJS
+// =========================
+router.get("/", (req, res) => {
+    res.render("flashcards");
+});
+
+// =========================
+// FUNÇÃO AUXILIAR
+// sessão OU JWT
+// =========================
+function obterUsuarioId(req) {
+
+    // sessão
+    if (req.session && req.session.usuario) {
+        return req.session.usuario.id;
+    }
+
+    // token JWT
+    const authHeader = req.headers.authorization;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+
+        try {
+
+            const token = authHeader.split(" ")[1];
+
+            const decodificado = jwt.verify(
+                token,
+                process.env.JWT_SECRET
+            );
+
+            return decodificado.id;
+
+        } catch (erro) {
+
+            console.log(
+                "Erro ao decodificar token:",
+                erro.message
+            );
+
+            return null;
+        }
+    }
+
+    return null;
+}
+
+// =========================
+// CRIAR FLASHCARD
+// =========================
+router.post("/", auth, async (req, res) => {
+
+    console.log("Dados recebidos:", req.body);
 
     try {
 
-        const {
-            pergunta,
-            resposta,
-            usuarioId
-        } = req.body;
+        const { pergunta, resposta, materia } = req.body;
+
+        const donoDoCard = obterUsuarioId(req);
+
+        if (!donoDoCard) {
+
+            return res.status(401).json({
+                msg: "Você precisa estar logado"
+            });
+
+        }
 
         const novoFlashcard = new Flashcard({
             pergunta,
             resposta,
-            usuarioId
+            materia: materia || "Geral",
+            usuarioId: donoDoCard
         });
 
         await novoFlashcard.save();
 
-        res.json({
-            msg: "Flashcard salvo!"
+        return res.status(201).json({
+            sucesso: true,
+            msg: "Flashcard salvo com sucesso!"
         });
 
     } catch (erro) {
 
         console.log(erro);
 
-        res.status(500).json({
+        return res.status(500).json({
+            sucesso: false,
             erro: erro.message
         });
 
@@ -39,19 +103,32 @@ router.post("/", async (req, res) => {
 
 });
 
-router.get("/:usuarioId", async (req, res) => {
+// =========================
+// LISTAR FLASHCARDS
+// =========================
+router.get("/dados", auth, async (req, res) => {
 
     try {
 
+        const donoDoCard = obterUsuarioId(req);
+
+        if (!donoDoCard) {
+
+            return res.status(401).json({
+                msg: "Você precisa estar logado"
+            });
+
+        }
+
         const flashcards = await Flashcard.find({
-            usuarioId: req.params.usuarioId
+            usuarioId: donoDoCard
         });
 
-        res.json(flashcards);
+        return res.json(flashcards);
 
     } catch (erro) {
 
-        res.status(500).json({
+        return res.status(500).json({
             erro: erro.message
         });
 
