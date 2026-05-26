@@ -38,7 +38,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 if (isProduction) {
 
   app.use(cors({
-    origin: 'https://seu-app-no-render.onrender.com',
+    origin: true,
     credentials: true
   }));
 
@@ -65,21 +65,30 @@ app.use(express.static(
 ));
 
 // =========================
+// TRUST PROXY
+// =========================
+app.set("trust proxy", 1);
+
+// =========================
 // SESSÃO
 // =========================
 app.use(session({
 
   name: 'fixly.sid',
 
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || "segredo",
 
   resave: false,
 
   saveUninitialized: false,
 
+  proxy: true,
+
   cookie: {
 
     secure: isProduction,
+
+    httpOnly: true,
 
     sameSite: isProduction ? 'none' : 'lax',
 
